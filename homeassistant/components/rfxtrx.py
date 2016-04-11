@@ -190,8 +190,8 @@ def apply_received_command(event):
         if event.values['Command'] == 'On'\
                 or event.values['Command'] == 'Off':
             if hasattr(RFX_DEVICES[device_id], 'brightness')\
-                and RFX_DEVICES[device_id]._transition_timer:
-                RFX_DEVICES[device_id]._transition_timer.cancel()
+                and RFX_DEVICES[device_id].transition_timer:
+                RFX_DEVICES[device_id].transition_timer.cancel()
 
             # Update the rfxtrx device state
             is_on = event.values['Command'] == 'On'
@@ -201,8 +201,8 @@ def apply_received_command(event):
 
         elif hasattr(RFX_DEVICES[device_id], 'brightness')\
                 and event.values['Command'] == 'Set level':
-            if RFX_DEVICES[device_id]._transition_timer:
-                RFX_DEVICES[device_id]._transition_timer.cancel()
+            if RFX_DEVICES[device_id].transition_timer:
+                RFX_DEVICES[device_id].transition_timer.cancel()
             # pylint: disable=protected-access
             RFX_DEVICES[device_id]._brightness = \
                 (event.values['Dim level'] * 255 // 100)
@@ -237,6 +237,9 @@ class RfxtrxDevice(Entity):
         self._state = datas[ATTR_STATE]
         self._should_fire_event = datas[ATTR_FIREEVENT]
         self.signal_repetitions = signal_repetitions
+
+        self._brightness = 0
+        self.transition_timer = None
 
     @property
     def should_poll(self):

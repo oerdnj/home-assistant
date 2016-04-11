@@ -46,14 +46,6 @@ def setup_platform(hass, config, add_devices_callback, discovery_info=None):
 class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
     """Represenation of a RFXtrx light."""
 
-    def __init__(self, name, event, datas, signal_repetitions):
-        """Initialize the light."""
-        rfxtrx.RfxtrxDevice.__init__(self, name,
-                                     event, datas,
-                                     signal_repetitions)
-        self._brightness = 0
-        self._transition_timer = None
-        
     @property
     def brightness(self):
         """Return the brightness of this light between 0..255."""
@@ -61,8 +53,8 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
 
     def turn_on(self, **kwargs):
         """Turn the light on."""
-        if self._transition_timer:
-            self._transition_timer.cancel()
+        if self.transition_timer:
+            self.transition_timer.cancel()
         brightness = kwargs.get(ATTR_BRIGHTNESS)
         transition = kwargs.get(ATTR_TRANSITION)
 
@@ -77,7 +69,7 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
             self._send_command("dim", _brightness)
             print("-----------nnnnnn")
             return
-            
+
         print("-----------vvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
         if not brightness:
             brightness = 255
@@ -92,8 +84,8 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
 
     def turn_off(self, **kwargs):
         """Turn the light off."""
-        if self._transition_timer:
-             self._transition_timer.cancel()
+        if self.transition_timer:
+             self.transition_timer.cancel()
         transition = kwargs.get(ATTR_TRANSITION)
         if not transition or transition == 0:
             rfxtrx.RfxtrxDevice.turn_off(self, **kwargs)
@@ -106,15 +98,15 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
         brightness_step = -1
         update_interval = transition/(self._brightness-brightness)
         self._transition_update(brightness_step, brightness, update_interval)
- 
+
     def _transition_update(self, brightness_step, target_brightness, update_interval):
         self._brightness = self._brightness + brightness_step
         if self._brightness > 0:
-            self.turn_on(brightness = self._brightness)
+            self.turn_on(brightness=self._brightness)
         else:
             self.turn_off()
 
         if self._brightness != target_brightness:
              args = (brightness_step, target_brightness, update_interval)
-             self._transition_timer = \
+             self.transition_timer = \
              Timer(update_interval, self._transition_update, args).start()
