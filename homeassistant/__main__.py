@@ -4,7 +4,6 @@ from __future__ import print_function
 import argparse
 from multiprocessing.spawn import get_executable
 import os
-import signal
 import sys
 import threading
 import time
